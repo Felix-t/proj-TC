@@ -1,0 +1,14 @@
+modules_address = [0x0B, 0x01];
+modules :
+{
+	module_1 :
+	{
+		status = [1,6,7]; 
+		type = ["TC_T", "TC_K", "TC_K"];
+	};
+	module_2 :
+	{
+		status = [3,5]; 
+		type = ["TC_T", "TC_J"];
+	}
+};
