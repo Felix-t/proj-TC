@@ -33,6 +33,9 @@ typedef struct {
 } configuration;
 
 
+uint8_t scan_modules(uint8_t *modules_add);
+
+
 /* Function : Open a serial communication 
  * Params : 	- port_name is a device name : usually /dev/something
  * 		- baudrate indicates the speed of the connection, 
@@ -62,7 +65,7 @@ uint8_t send_command(char * command, char * reception);
  * Return : 0 if error, 1 otherwise
 */
 uint8_t get_configuration(uint8_t module_address, configuration *config);
-
+uint8_t set_configuration(uint8_t module_address, configuration *config);
 
 /* Function : Print the configuration
  * Params : Configuration to print
@@ -100,6 +103,7 @@ uint8_t get_channel_data(uint8_t module_address, uint8_t ch_number, float *data)
  * Return : 0 if error, 1 otherwise
 */
 uint8_t get_all_channels_type(uint8_t module_address, tuple *ch_type);
+uint8_t set_all_channels_type(uint8_t module_address, tuple *ch_type);
 
 
 /* Function : Scan the 8 channels of a specified module and determines if they

@@ -139,6 +139,16 @@ uint8_t get_configuration(uint8_t module_address, configuration *config)
 }
 
 
+uint8_t set_configuration(uint8_t module_address, configuration *config)
+{ 
+	if(!set_configuration_status(module_address, config) 
+			|| !set_all_channels_type(module_address, config->ch_input)
+			|| !set_channels_status(module_address, config->channel_enable))
+		return 0;
+	return 1;
+}
+
+
 void print_configuration(configuration *cfg)
 {
 	if(cfg == NULL)
@@ -166,7 +176,7 @@ void print_configuration(configuration *cfg)
 			cfg->ch_input[i].name[3] = '0';
 		printf("%c - ", cfg->ch_input[i].name[3]);
 	}
-		printf("\n\tChannel status : \t");
+	printf("\n\tChannel status : \t");
 	for(i = 0; i< NB_CHANNELS; i++)
 		printf("%i - ", cfg->channel_enable[i]);
 	printf("\n\tChannel state : \t");
@@ -355,6 +365,16 @@ uint8_t get_configuration_status(uint8_t module_address, configuration *cfg)
 	return 1;
 }
 
+uint8_t set_all_channels_type(uint8_t module_address, tuple *ch_type)
+{
+	uint8_t i;
+	for(i = 0; i<NB_CHANNELS; i++)
+	{
+		if(!set_channel_type(module_address, i, &ch_type[i]))
+			return 0;
+	}
+	return 1;
+}
 
 uint8_t get_all_channels_type(uint8_t module_address, tuple *ch_type)
 {
@@ -579,6 +599,40 @@ uint8_t get_name(uint8_t module_address, char *name)
 	return 1;
 }
 
+
+uint8_t scan_modules(uint8_t *modules_add)
+{
+	uint8_t i, nb_mod = 0;
+	uint8_t mod_add_tmp[0xFF] = {0};
+	// Build command
+	char command[20] = "$", reception[50] = "";
+	char prefix[2] = "";
+
+	struct timespec tt = {
+		.tv_sec = 0,
+		.tv_nsec = 700000000
+	};
+
+	strcat(command, prefix);
+	strcat(command, "M");
+
+	printf("Scanning modules...   ");
+
+	for(i = 0; i < 0xFF; i++)
+	{
+		printf("\b\b%02hhx", i);
+		fflush(stdout);
+		nanosleep(&tt, NULL);
+		sprintf(prefix, "%02hhX", i);
+		if(!send_command(command, reception) 
+				|| !parse_answer(i, reception))
+		{
+			mod_add_tmp[nb_mod++] = i;
+		}
+	}
+	memcpy(modules_add, &mod_add_tmp, nb_mod);
+	return nb_mod;
+}
 
 uint8_t get_CJC_status(uint8_t module_address, float *temperature)
 {
