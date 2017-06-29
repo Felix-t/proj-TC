@@ -9,11 +9,19 @@
 #include <time.h>
 #include <stdint.h>
 
-/* Function : Apply changes to the ADAM modules to correspond to the 
+/* Function : Apply changes to the ADAM modules according to the 
  * currently loaded configuration. Acts blindly( does not check whether modules
- * addresses or config values are correct) 
+ * addresses or config values are correct). If an error occured while sending 
+ * commands to a module, does not stop but continue with the next module in 
+ * configuration
+ * Return : 0 if no configuration/modules are found or if an error occured 
+ * with the modules, 1 otherwise
 */
-uint8_t exec_config()
+uint8_t exec_config();
+
+uint8_t read_all(FILE *fp);
+
+uint8_t start_acquisition();
 
 
 /* Function : User interface to configure the ADAM modules */

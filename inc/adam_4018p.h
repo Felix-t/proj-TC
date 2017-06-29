@@ -17,6 +17,7 @@ typedef struct {
 } tuple;
 
 
+// The size of this struct is 570 bytes. With alignement, 572
 typedef struct {
 	tuple ch_input[NB_CHANNELS];
 	tuple baudrate;
@@ -33,7 +34,9 @@ typedef struct {
 } configuration;
 
 
-uint8_t scan_modules(uint8_t *modules_add);
+void init_struct_configuration(configuration *c);
+
+uint8_t scan_modules(uint8_t **modules_add, uint8_t max_add);
 
 
 /* Function : Open a serial communication 
@@ -70,14 +73,14 @@ uint8_t set_configuration(uint8_t module_address, configuration *config);
 /* Function : Print the configuration
  * Params : Configuration to print
 */
-void print_configuration(configuration *cfg);
+void print_configuration(configuration *cfg, FILE *fp);
 
 
 /* Function : Read the data from all channels of a module.
  * 	Channels disabled are set to -888888.0, while non connected but 
  * 	enabled channels are set to 888888.0
  * Params : 	- module_address : 0x00 -> 0xFF
- * 		- array of 8 uint8_t to contain the data (does not check 
+ * 		- array of 8 float to contain the data (does not check 
  * 		allocation of the array)
  * Return : 0 if communication error, 1 if success
 */
@@ -89,7 +92,7 @@ uint8_t get_all_data(uint8_t module_address, float *data);
  * 	If the channel is unconnected but enabled, data is set to 888888.0
  * Params : 	- module_address : 0x00 -> 0xFF
  * 		- The channel number (0 -> 7)
- * 		- pointer to an uint8_t to contain the data
+ * 		- pointer to an float to contain the data
  * Return : 0 if communication error, 1 if success
 */
 uint8_t get_channel_data(uint8_t module_address, uint8_t ch_number, float *data);

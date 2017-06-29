@@ -19,6 +19,28 @@ static float str_to_float(char *msg);
 int fd = -1;
 
 
+void init_struct_configuration(configuration *c)
+{
+	memset(c, 0, sizeof(configuration));	
+
+	// Defaults values :
+	// baudrate
+	sprintf(c->baudrate.name, baudrate_conf[3].name);
+	c->baudrate.code = baudrate_conf[3].code;
+	// Data format
+	sprintf(c->format.name, data_format[0].name);
+	c->baudrate.code = data_format[0].code;
+	// checksum
+	sprintf(c->checksum.name, checksum_status[0].name);
+	c->checksum.code = checksum_status[0].code;
+	// Integration
+	sprintf(c->integration.name, integration_time[0].name);
+	c->integration.code = integration_time[0].code;
+	// Input
+	sprintf(c->input.name, "Undefined");
+	c->input.code = 0xFF;
+}
+
 uint8_t init_connexion(char * port_name, int baudrate)
 {
 	if(baudrate == 0)
@@ -133,7 +155,7 @@ uint8_t get_configuration(uint8_t module_address, configuration *config)
 		memcpy(config, &cfg, sizeof(configuration));
 	}
 	else
-		print_configuration(&cfg);
+		print_configuration(&cfg, stdout);
 
 	return 1;
 }
@@ -149,14 +171,14 @@ uint8_t set_configuration(uint8_t module_address, configuration *config)
 }
 
 
-void print_configuration(configuration *cfg)
+void print_configuration(configuration *cfg, FILE *fp)
 {
 	if(cfg == NULL)
 	{
 		printf("Configuration passed in argument is NULL pointer\n");
 		return;
 	}
-	printf("\n\tAddress : %s\t Name : %s\n\tBaudrate : %s\n\t"
+	fprintf(fp, "\n\tAddress : %s\t Name : %s\n\tBaudrate : %s\n\t"
 			"Input type : %s\n\tData format : %s\n\t"
 			"Checksum %s\n\tIntegration time = %s\n\t"
 			"Firmware version : %s\n\tChannels number : \n\t"
@@ -168,21 +190,21 @@ void print_configuration(configuration *cfg)
 			cfg->temp_CJC);
 	uint8_t i;
 	for(i = 0; i< NB_CHANNELS; i++)
-		printf("%i - ", i);
-	printf("\n\tChannel input type : \t");
+		fprintf(fp, "%i - ", i);
+	fprintf(fp, "\n\tChannel input type : \t");
 	for(i = 0; i< NB_CHANNELS; i++)
 	{
 		if(cfg->ch_input[i].name[3] == 0)
 			cfg->ch_input[i].name[3] = '0';
-		printf("%c - ", cfg->ch_input[i].name[3]);
+		fprintf(fp, "%c - ", cfg->ch_input[i].name[3]);
 	}
-	printf("\n\tChannel status : \t");
+	fprintf(fp, "\n\tChannel status : \t");
 	for(i = 0; i< NB_CHANNELS; i++)
-		printf("%i - ", cfg->channel_enable[i]);
-	printf("\n\tChannel state : \t");
+		fprintf(fp, "%i - ", cfg->channel_enable[i]);
+	fprintf(fp, "\n\tChannel state : \t");
 	for(i = 0; i< NB_CHANNELS; i++)
-		printf("%i - ", cfg->channel_condition[i]);
-	printf("\n");
+		fprintf(fp, "%i - ", cfg->channel_condition[i]);
+	fprintf(fp, "\n");
 }
 
 
@@ -591,46 +613,49 @@ uint8_t get_name(uint8_t module_address, char *name)
 	}
 
 	module_name = remove_address_from_cmd(reception);
+	module_name[strlen(module_name)-1] = '\0';
 	if(module_name == NULL)
 		return 0;
-	strcpy(name, module_name);
+	strncpy(name, module_name, MAX_SIZE_MSG);
 
 	free(module_name);
 	return 1;
 }
 
 
-uint8_t scan_modules(uint8_t *modules_add)
+uint8_t scan_modules(uint8_t **modules_add, uint8_t max_add)
 {
+	if(max_add == 0)
+		max_add = 0xFF;
 	uint8_t i, nb_mod = 0;
-	uint8_t mod_add_tmp[0xFF] = {0};
+	uint8_t mod_add_tmp[max_add];
 	// Build command
-	char command[20] = "$", reception[50] = "";
-	char prefix[2] = "";
+	char command[20] = "", reception[50] = "";
 
 	struct timespec tt = {
 		.tv_sec = 0,
-		.tv_nsec = 700000000
+		.tv_nsec = 1000000000
 	};
 
-	strcat(command, prefix);
-	strcat(command, "M");
 
-	printf("Scanning modules...   ");
+	printf("Scanning modules...   \n");
 
-	for(i = 0; i < 0xFF; i++)
+	for(i = 0; i < max_add; i++)
 	{
-		printf("\b\b%02hhx", i);
+		printf("\b\b%02hhX", i);
 		fflush(stdout);
 		nanosleep(&tt, NULL);
-		sprintf(prefix, "%02hhX", i);
-		if(!send_command(command, reception) 
-				|| !parse_answer(i, reception))
+		sprintf(command, "$%02hhX", i);
+		if(send_command(command, reception) 
+				&& strcmp(reception, "") != 0)
 		{
 			mod_add_tmp[nb_mod++] = i;
 		}
 	}
-	memcpy(modules_add, &mod_add_tmp, nb_mod);
+	printf("\n");
+	*modules_add = malloc(nb_mod);
+	memcpy(*modules_add, &mod_add_tmp, nb_mod);
+
 	return nb_mod;
 }
 
@@ -684,9 +709,10 @@ uint8_t get_firmware_version(uint8_t module_address, char *version)
 		return 0;
 	}
 	tmpchar = remove_address_from_cmd(reception);
+	tmpchar[strlen(tmpchar)-1] = '\0';
 	if(tmpchar == NULL)
 		return 0;
-	strcpy(version, tmpchar);
+	strncpy(version, tmpchar, MAX_SIZE_MSG);
 
 	free(tmpchar);
 	return 1;
@@ -924,7 +950,7 @@ static void parse_config(char * msg, uint8_t module_address, configuration *cfg)
 
 static float str_to_float(char *msg)
 {
-	char tmp[7];
+	char tmp[7] = "";
 	strncpy(tmp, msg, 7);
 
 	char * err_Check;

@@ -6,7 +6,7 @@ modules :
 		baudrate = 9600;
 		format = "Engineering Units";
 		checksum = 0;
-		integration_time = 50;
+		integration_time = 5;
 		input = 0;
 		module_name = "abcde";
 		firmware_version = "version";
