@@ -321,6 +321,7 @@ uint8_t set_configuration_status(uint8_t module_address, configuration *cfg)
 	strcat(command, new_baudrate);
 
 	// Data format, checksum, integration time
+	printf("checksum received : %i\n", cfg->checksum.code);
 	if(tmp_cfg.checksum.code != cfg->checksum.code)
 		printf("Cannot enable/disable checksum in normal mode, used" 
 				" current value : %s\n", 
@@ -458,6 +459,8 @@ uint8_t set_channel_type(uint8_t module_address, uint8_t ch_number,
 		printf("Channel number incorrect : %i", ch_number);
 		return 0;
 	}
+	else if(ch_type->code == 0)
+		return 1;
 	else if(ch_type->code != 0x06 
 			&& (ch_type->code < 0x0E || ch_type->code > 0x14))
 	{

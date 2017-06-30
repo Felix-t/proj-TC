@@ -1,3 +1,16 @@
+/*H**********************************************************************
+* FILENAME :        adam_4018p.h         
+*
+* DESCRIPTION :
+* 	Header file for library providing access to an ADAM-4018 module.
+* 	Used for reading data, informations about the module and the associated 
+* 	themocouples.
+* 	Used for configuring the module and the channels.
+*
+* AUTHOR :    Félix Tamagny        START DATE :    16 June 2017
+*
+*H*/
+
 #ifndef _ADAM_4018p_
 #define _ADAM_4018p_
 

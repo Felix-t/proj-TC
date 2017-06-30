@@ -23,6 +23,7 @@ uint8_t read_all(FILE *fp);
 
 uint8_t start_acquisition();
 
+uint8_t change_config();
 
 /* Function : User interface to configure the ADAM modules */
 void module_management();

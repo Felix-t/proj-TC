@@ -1,48 +1,89 @@
+/*H**********************************************************************
+* FILENAME :        prog.c         
+*
+* DESCRIPTION :
+* 	Implements a user interface to manage a network of ADAM-4018
+*       & associated thermocouples
+*
+*
+* AUTHOR :    Félix Tamagny        START DATE :    16 June 2017
+*
+*H*/
+
 #include "prog.h"
 
+
+// Pointer to the array of struct configuration used
+static configuration **get_current_config(uint8_t **nb);
+
+// Find number of modules from config file
 static uint8_t parse_number_of_modules(config_t *cfg);
+//Return 1 if n is in range 0,255
+static inline uint8_t uint_checker(int n);
+// Fill a struct configuration[nb] with the data from a config file
 static void parse_config_from_file(config_t *file_cfg, configuration *cfg, 
 		uint8_t nb);
-static configuration **get_current_config(uint8_t **nb);
+// Fill a config file from a struct configuration[nb]
 static uint8_t save_config_to_file(char *path, configuration *conf, uint8_t nb);
+// Print "Channel 1, Channel 2, ..." in the stream
 static void print_header(FILE *fp);
-static uint8_t uint_checker(int n);
+// Prompt user for new address and exec the change
+static uint8_t change_address(configuration *cfg);
+// Prompt user for calibration and exec the change
+static uint8_t change_calibration(configuration *cfg);
+// Prompt user for new integration time and exec the change
+static uint8_t change_integration_time(configuration *cfg);
+// print the configuration of all channels
+static void print_channels(configuration *cfg);
+// Prompt user for new channels status(enable/disable) and input type
+// and exec the change
+static uint8_t change_channels_type_status(configuration *cfg);
+// Check if the given address is already in use (0 if it is)
+static uint8_t check_add(uint8_t add);
+
 
 // @TODO : gestion d'erreur
 uint8_t start_acquisition()
 {
+	size_t input_size, in;
 	float freq, duration;
-	char file[100];
+	char *input;
 	FILE *fp;
 	time_t start_time;
 
 	do
 	{
 		printf("Frequence (mesures/minutes) : ");
-		scanf("%f", &freq);
-		if(freq == 0)
-			freq = 0xFFFFFFFFFFFF;
+		in = getline(&input, &input_size, stdin);
+		input[in - 1] = '\0';
+		if((freq = strtof(input, NULL)) <= 0)
+			printf("Invalid input : must be a positive number\n");
 	}while(freq < 0);
 	do
 	{
 		printf("Fichier de capture : ");
-		scanf("%s", file);
-	}while((fp = fopen(file, "a+")) == NULL);
+		in = getline(&input, &input_size, stdin);
+		input[in - 1] = '\0';
+	}while((fp = fopen(input, "a+")) == NULL);
 	do
 	{
 		printf("Durée (minutes) : ");
-		scanf("%f", &duration);
+		in = getline(&input, &input_size, stdin);
+		input[in - 1] = '\0';
+		if((duration = strtof(input, NULL)) <= 0)
+			printf("Invalid input : must be a positive number\n");
 	}while(duration <= 0);
 
 	start_time = time(NULL);
 	print_header(fp);
 
-	while(difftime(time(NULL), start_time) < (double) 60*duration )
+	while(difftime(time(NULL), start_time) < 60*duration )
 	{
 		read_all(fp);
 		fflush(fp);
 		sleep(60 / freq);
 	}
+	free(input);
 	fclose(fp);
 	return 1;
 
@@ -114,7 +155,12 @@ uint8_t read_all(FILE *fp)
 			continue;
 		}
 		for(j = 0; j < NB_CHANNELS; j++)
-			fprintf(fp, "%f, ", data[i+8*j]);
+		{
+			if((*conf[i]).channel_enable[j] == 1)
+				fprintf(fp, "%.1f, ", data[8*i+j]);
+			else
+				fprintf(fp, "\t    ,");
+		}
 		fprintf(fp, "\n");
 	}
 	return 1;
@@ -136,9 +182,6 @@ uint8_t load_config_from_modules(uint8_t max_add)
 		printf("Error while scanning or no modules connected");
 		return 0;
 	}
-	printf("valeur : %i, addresse : %p\n", *nb_modules, nb_modules);
-	printf("conf : %p\n", conf);
-	printf("conf* : %p\n", *conf);
 
 	if(*conf != NULL)
 		free(*conf);
@@ -156,8 +199,6 @@ uint8_t load_config_from_modules(uint8_t max_add)
 		print_configuration(&*conf[i], stdout);
 	}
 
-	printf("valeur : %i, addresse : %p\n", *nb_modules, nb_modules);
-
 	free(add_modules);
 	return 1;
 }
@@ -170,7 +211,6 @@ uint8_t load_config_from_file(char * path)
 
 	// Get configuration pointer & dealoccate old config mem
 	configuration **conf = get_current_config(&nb_modules);
-	printf("Address nb modules : %p", nb_modules);
 
 
 	config_t cfg;	
@@ -214,38 +254,43 @@ void module_management()
 	uint8_t *number;
 	uint8_t i;
 	configuration **conf = get_current_config(&number);
-	char usr_choice = 0;
-	char save_path[100] = "";
-	uint8_t *follow = number;
+	char *save_path = NULL, *usr_choice = NULL;
+	size_t input_size = 100, in = 0;
 
-	printf("address number spe : %p\n", &number);
+	save_path = malloc(100);
+	usr_choice = malloc(100);
 
-	while(usr_choice != 'q')
+	do
 	{
-		printf("valeur : %i, addresse : %p\n", *number, number);
-		printf("\t\t[%c] : Chargement fichier de configuration\n", 'c');
-		printf("\t\t[%c] : Configuration par scan\n", 'm');
 		printf("\t\t[%c] : Afficher configuration actuelle\n", 'a');
+		printf("\t\t[%c] : Configuration par fichier\n", 'f');
+		printf("\t\t[%c] : Configuration par scan\n", 'm');
 		printf("\t\t[%c] : Sauvegarder configuration\n", 's');
+		printf("\t\t[%c] : Modifier configuration\n", 'c');
 		printf("\t\t[%c] : Quitter\n", 'q');
-		printf("Follow ---> valeur : %i, addresse : %p\n", *follow, follow);
-		scanf("%s", &usr_choice);
 
-		switch(usr_choice)
+		getline(&usr_choice, &input_size, stdin);
+
+
+		switch(usr_choice[0])
 		{
-			case 'c':
+			case 'f':
 				printf("Fichier : ");
-				scanf("%s", save_path);
+				in = getline(&save_path, &input_size, stdin);
+				save_path[in - 1] = '\0';
 				load_config_from_file(save_path);
 				break;
 			case 'm':
 				load_config_from_modules(0x0c);
 				break;
 			case 's':
-				printf("number : %i\n", *follow);
 				printf("Fichier : ");
-				scanf("%s", save_path);
-				save_config_to_file(save_path, *conf, *follow);
+				in = getline(&save_path, &input_size, stdin);
+				save_path[in - 1] = '\0';
+				save_config_to_file(save_path, *conf, *number);
+				break;
+			case 'c':
+				change_config();
 				break;
 			case 'a':
 				if((conf = get_current_config(&number)) != NULL
@@ -259,29 +304,92 @@ void module_management()
 				break;
 			default:
 				break;
+
 		};
-	}
+		input_size = 0;
+	}while(usr_choice[0] != 'q');
+	free(usr_choice);
 	return;
 }
 
 
+uint8_t change_config()
+{
+	uint8_t *number = NULL, i = 0, usr_choice = 0, base_add = 0;
+	char *input = NULL;
+	size_t input_size = 0;
+
+	configuration *cfg = NULL;
+	configuration **conf = get_current_config(&number);
+
+	printf("Module : ");
+	getline(&input, &input_size, stdin);
+	base_add = (uint8_t) strtol(input, NULL, 0);
+	for(i = 0; i < *number; i++)
+	{
+		if(base_add == (*conf[i]).module_address.code)
+			cfg = &(*conf)[i];
+	}
+
+	if(cfg == NULL)
+	{
+		printf("Error : modules does not exist in config\n");
+		return 0;
+	}
+
+	do
+	{
+		printf("\t\t[%c] : Addresse du module\n", '1');
+		printf("\t\t[%c] : Integration time\n", '2');
+		printf("\t\t[%c] : CJC calibration\n", '3');
+		printf("\t\t[%c] : Channel type\n", '4');
+		printf("\t\t[%c] : Channel enabled\n", '5');
+		printf("\t\t[%c] : Quitter\n", 'q');
+
+		getline(&input, &input_size, stdin);
+		usr_choice = input[0];
+
+		switch(usr_choice)
+		{
+			case '1':
+				change_address(cfg);
+				break;
+			case '2':
+				change_integration_time(cfg);
+				break;
+			case '3' :
+				change_calibration(cfg);
+				break;
+			case '4' :
+				change_channels_type_status(cfg);
+				break;
+			case '5' :
+				break;
+			default:
+				break;
+		};
+	}while(usr_choice != 'q');
+	return 1;
+}
+
 int main(int argc, char *argv[])
 {
+	char *usr_choice = NULL;
+	size_t max_input_size = 0;
 
 	init_connexion("/dev/ADAM", 0);
 
-	char usr_choice = 0;
-
-	while(usr_choice != 'q')
+	do
 	{
 		printf("\t\t[%c] : Gestion des modules\n", 'g');
 		printf("\t\t[%c] : Paramètres d'acquisition\n", 'p');
 		printf("\t\t[%c] : Lancer l'acquisition\n", 'm');
 		printf("\t\t[%c] : Lire les températures\n", 'l');
 		printf("\t\t[%c] : Quitter\n", 'q');
-		scanf("%s", &usr_choice);
 
-		switch(usr_choice)
+		getline(&usr_choice, &max_input_size, stdin);
+
+		switch(usr_choice[0])
 		{
 			case 'g':
 				module_management();
@@ -295,12 +403,13 @@ int main(int argc, char *argv[])
 			default:
 				break;
 		};
-	}
+	}while(usr_choice[0] != 'q');
 	close_connexion();
 	configuration **conf = get_current_config(NULL);
 	free(*conf);
 	return 0;
 }
+
 
 
 static configuration **get_current_config(uint8_t **nb)
@@ -334,7 +443,7 @@ static inline uint8_t uint_checker(int n)
 static void parse_config_from_file(config_t *file_cfg, configuration *cfg, 
 		uint8_t nb)
 {
-	uint8_t i, j, nb_ch;
+	uint8_t i, j, l, nb_ch;
 	int k = 0;
 	const char *tmp;
 	char tmp2[20];
@@ -484,21 +593,21 @@ static void parse_config_from_file(config_t *file_cfg, configuration *cfg,
 			if(config_setting_type(set) == CONFIG_TYPE_INT)
 				k = config_setting_get_int(set);
 
-			cfg[i].channel_enable[k] = 1;
+			cfg[i].channel_enable[k-1] = 1;
 
 			set = config_setting_get_elem(type, j);
 			if(config_setting_type(set) != CONFIG_TYPE_STRING)
 				continue;
 			// get the type name	
 			tmp = config_setting_get_string(set);
-			for(j = 0; j < 3; j++)
+			for(l = 0; l < 8; l++)
 			{
-				if(!strcmp(tmp, input_type[j].name))
+				if(!strcmp(tmp, input_type[l].name))
 				{
-					cfg[i].ch_input[j].code = 
-						input_type[j].code;
-					strncpy(cfg[i].ch_input[j].name, 
-							input_type[j].name, 30);
+					cfg[i].ch_input[k-1].code = 
+						input_type[l].code;
+					strncpy(cfg[i].ch_input[k-1].name, 
+							input_type[l].name, 30);
 					break;
 				}
 			}
@@ -602,4 +711,165 @@ static void print_header(FILE *fp)
 		fprintf(fp, "Ch%i\t", j);
 	fprintf(fp, "\n");
 }
+
+
+static uint8_t change_address(configuration *cfg)
+{
+	char * input = NULL;
+	uint8_t base_add = cfg->module_address.code;
+	long int parse;
+
+	printf("New address for module %02hhX : ", base_add);
+	getline(&input, NULL, stdin);
+	parse = strtol(input, NULL, 0);
+	free(input);
+	if(parse < 0 || parse > 0xFF)
+	{
+		printf("Address must be between 0x0 and 0xFF\n");
+		return 0;;
+	}
+	if(!check_add(parse))
+		return 0;
+
+	cfg->module_address.code = parse;
+	sprintf(cfg->module_address.name, "%02hhX", (uint8_t) parse);
+
+	if(!set_configuration_status(base_add, cfg))
+		return 0;
+	return 1;
+}
+
+
+static uint8_t change_calibration(configuration *cfg)
+{
+	printf("Changing calibration...\n");
+
+	printf("Not implemented\n");
+	return 1;
+}
+
+
+static uint8_t change_integration_time(configuration *cfg)
+{
+	long int parse;
+	char *input = NULL;
+
+	printf("Change integration time to : \n\t[0] : 50ms\n\t[1] : 60ms\n");
+
+	getline(&input, NULL, stdin);
+	parse = strtol(input, NULL, 0);
+	free(input);
+
+	if(parse < 0 || parse > 1)
+	{
+		printf("Please choose 0 or 1\n");
+		return 0;
+	}
+
+	cfg->integration.code = parse;
+	strncpy(cfg->integration.name, integration_time[parse].name, 6);
+
+	if(!set_configuration_status(cfg->module_address.code, cfg))
+		return 0;
+	return 1;
+}
+
+
+static void print_channels(configuration *cfg)
+{
+	uint8_t i;
+
+	// Print channels
+	printf("\t\t\t\t");
+	for(i = 0; i< NB_CHANNELS; i++)
+		printf("%i - ", i);
+	printf("\n\tChannel input type : \t");
+	for(i = 0; i< NB_CHANNELS; i++)
+	{
+		if(cfg->ch_input[i].name[3] == 0)
+			cfg->ch_input[i].name[3] = '0';
+		printf("%c - ", cfg->ch_input[i].name[3]);
+	}
+	printf("\n\tChannel status : \t");
+	for(i = 0; i< NB_CHANNELS; i++)
+		printf("%i - ", cfg->channel_enable[i]);
+	printf("\n\tChannel state : \t");
+	for(i = 0; i< NB_CHANNELS; i++)
+		printf("%i - ", cfg->channel_condition[i]);
+	printf("\n");
+}
+
+
+static uint8_t change_channels_type_status(configuration *cfg)
+{
+	long int parse;
+	char *input = NULL, t[6] = "TC_";
+	size_t in = 0, input_size = 0;
+	uint8_t ch = -1, i = 0;
+
+	print_channels(cfg);
+
+	printf("Channel to configure :");
+	getline(&input, &input_size, stdin);
+	parse = strtol(input, NULL, 0);
+
+	if(parse < 0 || parse > 7)
+	{
+		printf("Please choose between 0 and 7\n");
+		return 0;
+	}
+	ch = (uint8_t) parse;
+
+	printf("Enable ? (1/0) ");
+	getline(&input, &input_size, stdin);
+	parse = strtol(input, NULL, 0);
+	if(parse == 0 || parse == 1)
+	{
+		cfg->channel_enable[ch] = parse;
+		if(!set_channels_status(cfg->module_address.code, cfg->channel_enable))
+			return 0;
+	}
+	printf("Type (J, K, T, E, R, S, B) ? ");
+	in = getline(&input, &input_size, stdin);
+	input[in-1] = '\0';
+	strncat(t, input, 2);
+	free(input);
+
+	// Pass if only \n or if multiple letters have been entered
+	if(in == 2)
+	{
+		for(i = 0; i < 8; i++)
+		{
+			if(strcmp(t, input_type[i].name) == 0)
+			{
+				cfg->ch_input[ch].code = input_type[i].code;
+				strncpy(cfg->ch_input[ch].name,
+						input_type[i].name, 
+						30);
+				if(!set_channel_type(cfg->module_address.code,
+							ch, &cfg->ch_input[ch]))
+					return 0;
+			}
+		}
+
+	}
+
+	return 1;
+}
+
+
+static uint8_t check_add(uint8_t add)
+{
+		uint8_t i, *number = NULL;
+			configuration **conf = get_current_config(&number);
+
+				for(i = 0; i < *number; i++)
+						{
+									if(add == (*conf[i]).module_address.code)
+													return 1;
+										}
+					printf("Adress already existing\n");
+						return 0;
+}
+
 

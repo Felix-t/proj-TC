@@ -1,22 +1,17 @@
-modules_address = [0x0B, 0x01];
-modules :
+modules_address = [ 11 ];
+modules : 
 {
-	module_1 :
-	{
-		baudrate = 9600;
-		format = "Engineering Units";
-		checksum = 0;
-		integration_time = 5;
-		input = 0;
-		module_name = "abcde";
-		firmware_version = "version";
-		status = [1,6,7]; 
-		type = ["TC_T", "TC_K", "TC_K"];
-		CJC = -12.4;
-	};
-	module_2 :
-	{
-		status = [3,5]; 
-		type = ["TC_T", "TC_J"];
-	}
+  module_1 : 
+  {
+    baudrate = "9600";
+    format = "Engineering Units";
+    checksum = 0;
+    integration_time = "50 ms";
+    input = "Undefined";
+    module_name = "4018P";
+    firmware_version = "A2.05";
+    CJC = 23.0;
+    status = [ 1 ];
+    type = [ "TC_K" ];
+  };
 };
