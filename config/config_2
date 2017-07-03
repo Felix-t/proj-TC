@@ -1,0 +1,17 @@
+modules_address = [ 11 ];
+modules : 
+{
+  module_1 : 
+  {
+    baudrate = "9600";
+    format = "Engineering Units";
+    checksum = 0;
+    integration_time = "50 ms";
+    input = "Undefined";
+    module_name = "4018P";
+    firmware_version = "A2.05";
+    CJC = 24.10000038;
+    status = [ 3, 6 ];
+    type = [ "TC_K", "TC_K" ];
+  };
+};

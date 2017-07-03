@@ -1,3 +1,14 @@
+/*H**********************************************************************
+* FILENAME :        prog.h         
+* 
+* DESCRIPTION :
+* 	Implements a user interface to manage a network of ADAM-4018
+*       & associated thermocouples
+*
+* AUTHOR :    Félix Tamagny        START DATE :    23 June 2017
+*
+*H*/
+
 #ifndef _PROG_H_
 #define _PROG_H_
 
@@ -8,6 +19,11 @@
 #include <libconfig.h>
 #include <time.h>
 #include <stdint.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <argp.h>
+
+#define DEFAULT_OUTPUT_PATH "Data/"
 
 /* Function : Apply changes to the ADAM modules according to the 
  * currently loaded configuration. Acts blindly( does not check whether modules
@@ -19,10 +35,27 @@
 */
 uint8_t exec_config();
 
+
+/* Function : Read the data from all channels of all modules defined in 
+ * current configuration and print it to a stream (stdout, a file...)
+ * Params : A stream where data will be printed
+ * Return : 0 if a communication error occured, 1 otherwise
+*/
 uint8_t read_all(FILE *fp);
 
-uint8_t start_acquisition();
 
+/* Function : Prompt the user for acquisition parameters (file, freq, duration),
+ * then start reading from the modules accordingly. Uses the current 
+ * configuration
+ * Return : Return 0 if a communication error occured, 1 when acquisition ends
+*/
+uint8_t start_acquisition(FILE *fp, uint32_t duration, double freq);
+
+
+/* Function : Prompt the user for configuration values, then check their 
+ * validity and apply them.
+ * Return : 0 if value error or communication error, 1 if success
+*/
 uint8_t change_config();
 
 /* Function : User interface to configure the ADAM modules */

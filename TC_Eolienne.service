@@ -1,0 +1,13 @@
+[Unit]
+Description=Process d'acquisition des données thermocouples
+Wants=multi-user.target
+
+[Service]
+Restart=always
+RestartSec=30
+Type=idle
+WorkingDirectory=/home/pi/TC_Eolienne/
+ExecStart=/home/pi/TC_Eolienne/bin/thermocouples -c config/config_2
+
+[Install]
+WantedBy=graphical.target

@@ -32,11 +32,8 @@ const char *argp_program_bug_address =
 
 /* Program documentation. */
 static char doc[] =
-  "Argp example #4 -- a program with somewhat more complicated\
-options\
-\vThis part of the documentation comes *after* the options;\
- note that the text is automatically filled, but it's possible\
- to force a line-break, e.g.\n<-- here.";
+  "Program to configure and start data acquisition for thermocouples with ADAM"
+  " modules\n";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "ARG1 [STRING...]";
@@ -46,17 +43,13 @@ static char args_doc[] = "ARG1 [STRING...]";
 
 /* The options we understand. */
 static struct argp_option options[] = {
-  {"verbose",  'v', 0,       0, "Produce verbose output" },
-  {"quiet",    'q', 0,       0, "Don't produce any output" },
-  {"silent",   's', 0,       OPTION_ALIAS },
   {"output",   'o', "FILE",  0,
    "Output to FILE instead of standard output" },
-
-  {0,0,0,0, "The following options should be grouped together:" },
-  {"repeat",   'r', "COUNT", OPTION_ARG_OPTIONAL,
-   "Repeat the output COUNT (default 10) times"},
-  {"abort",    OPT_ABORT, 0, 0, "Abort before showing any output"},
-
+  {"config",   'c', "FILE",  0,
+   "Get the configuration from FILE instead of by scanning" },
+  {"freq", 'f', "Frequency (/min)", 0, 
+	"Set the acquisition frequency (default is 1/min)"},
+  {"duration", 't', "DURATION", 0, "Set the acquisition duration"},
   { 0 }
 };
 
@@ -65,9 +58,10 @@ struct arguments
 {
   char *arg1;                   /* arg1 */
   char **strings;               /* [string…] */
-  int silent, verbose, abort;   /* ‘-s’, ‘-v’, ‘--abort’ */
+  int interactive;   /* ‘-s’, ‘-v’, ‘--abort’ */
   char *output_file;            /* file arg to ‘--output’ */
-  int repeat_count;             /* count arg to ‘--repeat’ */
+  char *config_file;            /* file arg to ‘--config’ */
+  double freq;             /* count arg to ‘--repeat’ */
 };
 
 /* Parse a single option. */
@@ -80,24 +74,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
-    case 'q': case 's':
-      arguments->silent = 1;
-      break;
-    case 'v':
-      arguments->verbose = 1;
-      break;
     case 'o':
       arguments->output_file = arg;
       break;
-    case 'r':
-      arguments->repeat_count = arg ? atoi (arg) : 10;
+    case 'p':
+      arguments->config_file = arg;
       break;
-    case OPT_ABORT:
-      arguments->abort = 1;
+    case 'r':
+      arguments->freq = arg ? atoi (arg) : 1;
       break;
 
     case ARGP_KEY_NO_ARGS:
-      argp_usage (state);
+      arguments->interactive = 1;
 
     case ARGP_KEY_ARG:
       /* Here we know that state->arg_num == 0, since we
@@ -136,11 +124,7 @@ main (int argc, char **argv)
   struct arguments arguments;
 
   /* Default values. */
-  arguments.silent = 0;
-  arguments.verbose = 0;
-  arguments.output_file = "-";
-  arguments.repeat_count = 1;
-  arguments.abort = 0;
+  arguments.output_file = stdout;
 
   /* Parse our arguments; every option seen by parse_opt will be
      reflected in arguments. */
@@ -149,7 +133,7 @@ main (int argc, char **argv)
   if (arguments.abort)
     error (10, 0, "ABORTED");
 
-  for (i = 0; i < arguments.repeat_count; i++)
+  for (i = 0; i < 10; i++)
     {
       printf ("ARG1 = %s\n", arguments.arg1);
       printf ("STRINGS = ");

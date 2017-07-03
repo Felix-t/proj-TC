@@ -20,7 +20,7 @@ OBJ = $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(SRC))
 TESTS_OBJ = $(patsubst $(TDIR)/%.c,$(ODIR)/%.o,$(TESTS_SRC))
 OBJS = $(wildcard $(ODIR)/*.o)
 
-$(BDIR)/programme: $(OBJ)
+$(BDIR)/thermocouples: $(OBJ)
 	$(CC) -o $@ $(ODIR)/*.o $(LIBS) $(CFLAGS)
 	
 tests: CFLAGS += -D_TEST_ 

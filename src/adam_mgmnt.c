@@ -1,21 +1,23 @@
 /*H**********************************************************************
-* FILENAME :        prog.c         
-*
-* DESCRIPTION :
-* 	Implements a user interface to manage a network of ADAM-4018
-*       & associated thermocouples
-*
-*
-* AUTHOR :    Félix Tamagny        START DATE :    16 June 2017
-*
-*H*/
+ * FILENAME :        prog.c         
+ *
+ * DESCRIPTION :
+ * 	Implements a user interface to manage a network of ADAM-4018
+ *       & associated thermocouples
+ *
+ *
+ * AUTHOR :    Félix Tamagny        START DATE :    23 June 2017
+ *
+ *H*/
 
-#include "prog.h"
+#include "adam_mgmnt.h"
 
 
 // Pointer to the array of struct configuration used
 static configuration **get_current_config(uint8_t **nb);
 
+// Open a file in DEFAULT_OUTPUT_PATH with the day's date
+static uint8_t open_new_file(FILE **fp);
 // Find number of modules from config file
 static uint8_t parse_number_of_modules(config_t *cfg);
 //Return 1 if n is in range 0,255
@@ -42,14 +44,130 @@ static uint8_t change_channels_type_status(configuration *cfg);
 static uint8_t check_add(uint8_t add);
 
 
+const char *argp_program_version  = "v1.0";
+const char *argp_program_bug_address = "<felix.tamagny@ifsttar.fr>";
+
+/* Program documentation. */
+static char doc[] = "Program to configure and start data acquisition for"
+"thermocouples connected with ADAM modules\n";
+
+/* A description of the arguments we accept. */
+static char args_doc[] = "[OPTION...ARG]";
+
+
+/* The options we understand. */
+static struct argp_option options[] = {
+	{"output",   'o', "FILE",  0,
+		"Output to FILE. Default is Data/xx_xx_xxxx_data (date)."
+			" Value of stdout output to terminal" },
+	{"config",   'c', "FILE",  0,
+		"Get the configuration from FILE instead of by scanning" },
+	{"freq", 'f', "mesures/min", 0, 
+		"Set the acquisition frequency (default is 0.2/min)"},
+	{"duration", 't', "DURATION", 0, "Set the acquisition duration" 
+		" (default is infinite)"},
+	{"interactive", 'i', 0, 0, 
+		"Start program in interactive mode (ignore other options)"},
+	{ 0 }
+};
+
+/* Used by main to communicate with parse_opt. */
+struct arguments
+{
+	int interactive;   		/* ‘-s’, ‘-v’, ‘--abort’ */
+	char *output_file_path, *config_file_path;
+	double freq;             	/* Frequency in data/min */
+	uint32_t duration; 		/* Duration of the acquisition */
+};
+
+/* Parse a single option. */
+	static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
+{
+	/* Get the input argument from argp_parse, which we
+	   know is a pointer to our arguments structure. */
+	struct arguments *arguments = state->input;
+
+	switch (key)
+	{
+		case 'o':
+			arguments->interactive = 0;
+			arguments->config_file_path = arg;
+
+			break;
+		case 'c':      
+			arguments->interactive = 0;
+			arguments->output_file_path = arg;
+			break;
+		case 'f':
+			arguments->interactive = 0;
+			arguments->freq = arg ? atof (arg) : 1;
+			break;
+		case 't':
+			arguments->interactive = 0;
+			if(atoi(arg) != 0)
+				arguments->duration = atoi(arg);
+			break;
+		case 'i':
+			arguments->interactive = 1;
+			state->next = state->argc;
+			break;
+		case ARGP_KEY_NO_ARGS:
+			//argp_usage (state);
+
+		case ARGP_KEY_ARG:
+			/* Here we know that state->arg_num == 0, since we
+			   force argument parsing to end before any more 
+			   arguments can get here. */
+
+			/* Now we consume all the rest of the arguments.
+			   state->next is the index in state->argv of the
+			   next argument to be parsed, which is the first string
+			   we’re interested in, so we can just use
+			   &state->argv[state->next] as the value for
+			   arguments->strings.
+
+			   In addition, by setting state->next to the end
+			   of the arguments, we can force argp to stop parsing
+			   here and return. */
+			state->next = state->argc;
+
+			break;
+
+		default:
+			return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
+}
+
+
+/* Our argp parser. */
+static struct argp argp = { options, parse_opt, args_doc, doc };
+
+
+uint8_t start_acquisition(FILE *fp, uint32_t duration, double freq)
+{
+	time_t start_time = time(NULL);
+	print_header(fp);
+
+	while(difftime(time(NULL), start_time) < 60*duration )
+	{
+		if(!read_all(fp))
+			printf("Error while reading data\n");
+		fflush(fp);
+		sleep(60 / freq);
+	}
+	return 1;
+}
+
+
 // @TODO : gestion d'erreur
-uint8_t start_acquisition()
+uint8_t prompt_acquisition()
 {
 	size_t input_size, in;
 	float freq, duration;
 	char *input;
 	FILE *fp;
-	time_t start_time;
 
 	do
 	{
@@ -74,15 +192,8 @@ uint8_t start_acquisition()
 			printf("Invalid input : must be a positive number\n");
 	}while(duration <= 0);
 
-	start_time = time(NULL);
-	print_header(fp);
+	start_acquisition(fp, duration, freq);
 
-	while(difftime(time(NULL), start_time) < 60*duration )
-	{
-		read_all(fp);
-		fflush(fp);
-		sleep(60 / freq);
-	}
 	free(input);
 	fclose(fp);
 	return 1;
@@ -128,6 +239,8 @@ uint8_t read_all(FILE *fp)
 {
 	uint8_t i, j, *nb_modules = NULL;
 	float *data;
+	char *time_string;
+	time_t t;
 
 	configuration **conf = get_current_config(&nb_modules);
 	data = malloc(sizeof(float) * 8 * (*nb_modules));
@@ -154,12 +267,19 @@ uint8_t read_all(FILE *fp)
 					", skipping to next module\n", i);
 			continue;
 		}
+		if(*nb_modules > 1)
+			fprintf(fp, "Module %02hhX,\n", i);
+		t = time(NULL);
+		time_string = ctime(&t);
+		time_string[strlen(time_string) - 1] = '\0';
+		fprintf(fp, "%s, ", time_string);
 		for(j = 0; j < NB_CHANNELS; j++)
 		{
+
 			if((*conf[i]).channel_enable[j] == 1)
-				fprintf(fp, "%.1f, ", data[8*i+j]);
+				fprintf(fp, "%.1f \t,", data[8*i+j]);
 			else
-				fprintf(fp, "\t    ,");
+				fprintf(fp, "\t,");
 		}
 		fprintf(fp, "\n");
 	}
@@ -372,44 +492,138 @@ uint8_t change_config()
 	return 1;
 }
 
+
+// @TODO : check error management for config file and output file
 int main(int argc, char *argv[])
 {
+	FILE *fp = NULL;
 	char *usr_choice = NULL;
 	size_t max_input_size = 0;
+	struct arguments arguments;
+	uint8_t *number;
+	configuration **conf  = get_current_config(&number);
 
+	/* Default values. */
+	arguments.output_file_path = NULL;
+	arguments.config_file_path = NULL;
+	arguments.interactive = 1;
+	arguments.duration = UINT32_MAX;
+	arguments.freq = 0.2;
+
+	/* Parse our arguments; every option seen by parse_opt will be
+	   reflected in arguments. */
+	argp_parse (&argp, argc, argv, 0, 0, &arguments);
+
+	sleep(5);
 	init_connexion("/dev/ADAM", 0);
 
-	do
+	if(!arguments.interactive)
 	{
-		printf("\t\t[%c] : Gestion des modules\n", 'g');
-		printf("\t\t[%c] : Paramètres d'acquisition\n", 'p');
-		printf("\t\t[%c] : Lancer l'acquisition\n", 'm');
-		printf("\t\t[%c] : Lire les températures\n", 'l');
-		printf("\t\t[%c] : Quitter\n", 'q');
-
-		getline(&usr_choice, &max_input_size, stdin);
-
-		switch(usr_choice[0])
+		// If no output path is given, set it to default
+		// Otherwise, try to open the given file
+		if(strcmp(arguments.output_file_path, "stdout") == 0)
+			fp = stdout;
+		else if(arguments.output_file_path != NULL &&
+				(fp = fopen(arguments.output_file_path, "a")) == NULL)
 		{
-			case 'g':
-				module_management();
-				break;
-			case 'p':
-				start_acquisition();
-				break;
-			case 'l' :
-				read_all(stdout);
-				break;
-			default:
-				break;
-		};
-	}while(usr_choice[0] != 'q');
+			printf("Couldn't open output file : %s\n",
+					arguments.output_file_path);
+			return errno;
+		}
+		else if(open_new_file(&fp) == 0)
+			return 0;
+
+		// If no config path is given, scan the modules to get the 
+		// values in place. Otherwise, try to get config from file
+		if(arguments.config_file_path != NULL &&
+				load_config_from_file(arguments.config_file_path) == 0)
+		{
+			printf("Error loading config file : %s\n", 
+					arguments.config_file_path);
+			return errno;
+		}
+		else
+			load_config_from_modules(0x10);
+
+		// Start acquisition with the given parameters
+		start_acquisition(fp, arguments.duration, arguments.freq);
+	}
+
+	else 
+	{
+		do
+		{
+			printf("\t\t[%c] : Gestion des modules\n", 'g');
+			printf("\t\t[%c] : Paramètres d'acquisition\n", 'p');
+			printf("\t\t[%c] : Lancer l'acquisition\n", 'm');
+			printf("\t\t[%c] : Lire les températures\n", 'l');
+			printf("\t\t[%c] : Quitter\n", 'q');
+
+			getline(&usr_choice, &max_input_size, stdin);
+
+			switch(usr_choice[0])
+			{
+				case 'g':
+					module_management();
+					break;
+				case 'p':
+					prompt_acquisition();
+					break;
+				case 'l' :
+					read_all(stdout);
+					break;
+				default:
+					break;
+			};
+		}while(usr_choice[0] != 'q');
+	}
+
+	fclose(fp);
 	close_connexion();
-	configuration **conf = get_current_config(NULL);
 	free(*conf);
 	return 0;
 }
 
+
+static uint8_t open_new_file(FILE **fp)
+{
+	if(*fp != NULL)
+		fclose(*fp);
+
+	static DIR* FD;
+
+	static char *path_base = DEFAULT_OUTPUT_PATH;
+	char *path = malloc(100);
+
+	time_t t = time(NULL);
+	struct tm *tt = localtime(&t);
+
+	// Path specified in the config, add a suffix to it
+
+	if(NULL == (FD = opendir(path_base)))
+	{
+		printf("Creating directory %s ...", path_base);
+		mkdir(path_base, S_IRWXU | S_IRWXG | S_IRWXO);
+		if(NULL == (FD = opendir(path_base)))
+		{
+			printf("Error opening output directory");
+			return 0;
+		}
+	}
+	closedir(FD);
+
+	sprintf(path, "%s%02i-%02i-%i_data", path_base, 
+			tt->tm_mday, tt->tm_mon, tt->tm_year + 1900);
+
+	if(!(*fp = fopen(path, "a+")))
+	{
+		printf("Can't open file %s\n", path);
+		return 0;
+	}
+
+	free(path);
+	return 1;
+}
 
 
 static configuration **get_current_config(uint8_t **nb)
@@ -420,6 +634,7 @@ static configuration **get_current_config(uint8_t **nb)
 		*nb = &nb_modules;
 	return &cfg;
 }
+
 
 static uint8_t parse_number_of_modules(config_t *cfg)
 {
@@ -593,7 +808,7 @@ static void parse_config_from_file(config_t *file_cfg, configuration *cfg,
 			if(config_setting_type(set) == CONFIG_TYPE_INT)
 				k = config_setting_get_int(set);
 
-			cfg[i].channel_enable[k-1] = 1;
+			cfg[i].channel_enable[k] = 1;
 
 			set = config_setting_get_elem(type, j);
 			if(config_setting_type(set) != CONFIG_TYPE_STRING)
@@ -604,9 +819,9 @@ static void parse_config_from_file(config_t *file_cfg, configuration *cfg,
 			{
 				if(!strcmp(tmp, input_type[l].name))
 				{
-					cfg[i].ch_input[k-1].code = 
+					cfg[i].ch_input[k].code = 
 						input_type[l].code;
-					strncpy(cfg[i].ch_input[k-1].name, 
+					strncpy(cfg[i].ch_input[k].name, 
 							input_type[l].name, 30);
 					break;
 				}
@@ -685,8 +900,7 @@ static uint8_t save_config_to_file(char *path, configuration *conf, uint8_t nb)
 			if(conf[i].channel_enable[j] == 1)
 			{
 				// -1 = add new value to an array
-				config_setting_set_int_elem(set, -1, 
-						conf[i].channel_enable[j]);
+				config_setting_set_int_elem(set, -1, j);
 				config_setting_set_string_elem(tmp, -1, 
 						conf[i].ch_input[j].name);
 			}
@@ -707,8 +921,9 @@ static uint8_t save_config_to_file(char *path, configuration *conf, uint8_t nb)
 static void print_header(FILE *fp)
 {
 	uint8_t j;
+	fprintf(fp, "Date,\t\t\t");
 	for(j = 0 ; j < NB_CHANNELS; j++)
-		fprintf(fp, "Ch%i\t", j);
+		fprintf(fp, "Ch%i,\t", j);
 	fprintf(fp, "\n");
 }
 
@@ -860,16 +1075,16 @@ static uint8_t change_channels_type_status(configuration *cfg)
 
 static uint8_t check_add(uint8_t add)
 {
-		uint8_t i, *number = NULL;
-			configuration **conf = get_current_config(&number);
+	uint8_t i, *number = NULL;
+	configuration **conf = get_current_config(&number);
 
-				for(i = 0; i < *number; i++)
-						{
-									if(add == (*conf[i]).module_address.code)
-													return 1;
-										}
-					printf("Adress already existing\n");
-						return 0;
+	for(i = 0; i < *number; i++)
+	{
+		if(add == (*conf[i]).module_address.code)
+			return 1;
+	}
+	printf("Adress already existing\n");
+	return 0;
 }
 
 

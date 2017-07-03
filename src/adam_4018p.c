@@ -1,3 +1,17 @@
+/*H**********************************************************************
+* FILENAME :        prog.c         
+*
+* DESCRIPTION :
+* 	Library providing access to an ADAM-4018 module.
+* 	Used for reading data, informations about the module and the associated 
+* 	themocouples.
+* 	Used for configuring the module and the channels.
+*
+* AUTHOR :    Félix Tamagny        START DATE :    16 June 2017
+*
+*H*/
+
+
 #include "adam_4018p.h"
 #include "serial.h"
 #include <time.h>
@@ -5,6 +19,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
+
 
 static inline uint8_t str_to_hex(char msb, char lsb);
 static char * hex_to_str(uint8_t add);
@@ -181,14 +196,15 @@ void print_configuration(configuration *cfg, FILE *fp)
 	fprintf(fp, "\n\tAddress : %s\t Name : %s\n\tBaudrate : %s\n\t"
 			"Input type : %s\n\tData format : %s\n\t"
 			"Checksum %s\n\tIntegration time = %s\n\t"
-			"Firmware version : %s\n\tChannels number : \n\t"
-			"CJC Status : %0.1f\n\t\t\t\t", 
+			"Firmware version : %s\n\t"
+			"CJC Status : %0.1f\n\t", 
 			cfg->module_address.name, cfg->module_name,
 			cfg->baudrate.name, cfg->input.name,
 			cfg->format.name, cfg->checksum.name,
 			cfg->integration.name, cfg->firmware_version,
 			cfg->temp_CJC);
 	uint8_t i;
+	printf("Channels number : \t");
 	for(i = 0; i< NB_CHANNELS; i++)
 		fprintf(fp, "%i - ", i);
 	fprintf(fp, "\n\tChannel input type : \t");
@@ -868,7 +884,7 @@ static void hex_to_uppercase(char *str)
 static char * remove_address_from_cmd(char * response)
 {
 	char * str = malloc(MAX_SIZE_MSG);
-	memcpy(str, &response[3], strlen(response) - 3);
+	memcpy(str, &response[3], strlen(response) - 2);
 	return str;
 }
 
