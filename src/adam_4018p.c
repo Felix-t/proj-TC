@@ -149,6 +149,7 @@ uint8_t send_command(char * command, char * reception)
 
 uint8_t get_configuration(uint8_t module_address, configuration *config)
 { 
+	printf("Address conf get_configuration : %p\n", config);
 	// Temporary configuration struct : in case of failure,
 	// the configuration given is not overwritten
 	configuration cfg;

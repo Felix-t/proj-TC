@@ -49,7 +49,7 @@ const char *argp_program_bug_address = "<felix.tamagny@ifsttar.fr>";
 
 /* Program documentation. */
 static char doc[] = "Program to configure and start data acquisition for"
-"thermocouples connected with ADAM modules\n";
+" thermocouples connected with ADAM modules\n";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "[OPTION...ARG]";
@@ -68,16 +68,19 @@ static struct argp_option options[] = {
 		" (default is infinite)"},
 	{"interactive", 'i', 0, 0, 
 		"Start program in interactive mode (ignore other options)"},
+	{"device", 'd', "FILE", 0, "Specify specific device for communication"},
+	{"baudrate", 'b', "Hz", 0, "Specify specific baudrate for"
+		" communication (default is 9600)"},
 	{ 0 }
 };
 
 /* Used by main to communicate with parse_opt. */
 struct arguments
 {
-	int interactive;   		/* ‘-s’, ‘-v’, ‘--abort’ */
-	char *output_file_path, *config_file_path;
 	double freq;             	/* Frequency in data/min */
-	uint32_t duration; 		/* Duration of the acquisition */
+	uint32_t baud, duration;
+	char *device, *output_file_path, *config_file_path;
+	uint8_t interactive;   		/* ‘-s’, ‘-v’, ‘--abort’ */
 };
 
 /* Parse a single option. */
@@ -92,12 +95,19 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	{
 		case 'o':
 			arguments->interactive = 0;
-			arguments->config_file_path = arg;
-
+			arguments->output_file_path = arg;
+			printf("-%s-\n", arg);
 			break;
 		case 'c':      
 			arguments->interactive = 0;
-			arguments->output_file_path = arg;
+			arguments->config_file_path = arg;
+			break;
+		case 'b':      
+			arguments->interactive = 0;
+			arguments->baud = atoi(arg);
+			break;
+		case 'd':      
+			arguments->device = arg;
 			break;
 		case 'f':
 			arguments->interactive = 0;
@@ -259,6 +269,13 @@ uint8_t read_all(FILE *fp)
 	if (fp == stdout)
 		print_header(fp);
 
+	// Print time
+	t = time(NULL);
+	time_string = ctime(&t);
+	time_string[strlen(time_string) - 1] = '\0';
+	fprintf(fp, "%s, ", time_string);
+
+	// Print Data of all channels of all modules in a single line
 	for (i = 0; i< *nb_modules; i++)
 	{
 		if(!get_all_data((*conf[i]).module_address.code, (data+8*i)))
@@ -267,12 +284,8 @@ uint8_t read_all(FILE *fp)
 					", skipping to next module\n", i);
 			continue;
 		}
-		if(*nb_modules > 1)
-			fprintf(fp, "Module %02hhX,\n", i);
-		t = time(NULL);
-		time_string = ctime(&t);
-		time_string[strlen(time_string) - 1] = '\0';
-		fprintf(fp, "%s, ", time_string);
+		//if(*nb_modules > 1)
+		//	fprintf(fp, "Module %02hhX,\n", i);
 		for(j = 0; j < NB_CHANNELS; j++)
 		{
 
@@ -281,8 +294,8 @@ uint8_t read_all(FILE *fp)
 			else
 				fprintf(fp, "\t,");
 		}
-		fprintf(fp, "\n");
 	}
+	fprintf(fp, "\n");
 	return 1;
 }
 
@@ -302,6 +315,7 @@ uint8_t load_config_from_modules(uint8_t max_add)
 		printf("Error while scanning or no modules connected");
 		return 0;
 	}
+	printf("Number of detected modules : %i\n", *nb_modules);
 
 	if(*conf != NULL)
 		free(*conf);
@@ -314,8 +328,9 @@ uint8_t load_config_from_modules(uint8_t max_add)
 
 	for(i = 0; i < *nb_modules; i++)
 	{
-		if((get_configuration(add_modules[i], &*conf[i])) == 0)
+		if((get_configuration(add_modules[i], conf[i])) == 0)
 			return 0;
+		printf("Address conf %i : %p\n", i, &*conf[i]);
 		print_configuration(&*conf[i], stdout);
 	}
 
@@ -382,6 +397,7 @@ void module_management()
 
 	do
 	{
+		printf("\n\t\t*************************\t\n\n");
 		printf("\t\t[%c] : Afficher configuration actuelle\n", 'a');
 		printf("\t\t[%c] : Configuration par fichier\n", 'f');
 		printf("\t\t[%c] : Configuration par scan\n", 'm');
@@ -493,6 +509,31 @@ uint8_t change_config()
 }
 
 
+uint8_t apply_config()
+{
+	uint8_t i, *nb_modules;
+	configuration **conf = get_current_config(&nb_modules);
+	int fail = 0;
+
+	for(i = 0; i < *nb_modules; i++)
+	{
+		if(!change_address(*conf + i) ||
+				!change_integration_time(*conf + i) ||
+				!change_calibration(*conf + i) ||
+				!change_channels_type_status(*conf + i))
+		{
+			printf("Error applying configuration for module %i, "
+					"skipping to next module\n", i);
+			fail++;
+			continue;
+		}
+	}
+
+	if( fail != 0)
+		printf("%i fails encountered\n", fail);
+	return !fail;
+}
+
 // @TODO : check error management for config file and output file
 int main(int argc, char *argv[])
 {
@@ -506,41 +547,49 @@ int main(int argc, char *argv[])
 	/* Default values. */
 	arguments.output_file_path = NULL;
 	arguments.config_file_path = NULL;
+	arguments.device = NULL;
 	arguments.interactive = 1;
 	arguments.duration = UINT32_MAX;
 	arguments.freq = 0.2;
+	arguments.baud = 0;
 
 	/* Parse our arguments; every option seen by parse_opt will be
 	   reflected in arguments. */
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
 	sleep(5);
-	init_connexion("/dev/ADAM", 0);
 
 	if(!arguments.interactive)
 	{
 		// If no output path is given, set it to default
 		// Otherwise, try to open the given file
-		if(strcmp(arguments.output_file_path, "stdout") == 0)
+		if(arguments.output_file_path == NULL)
+		{
+			if( !open_new_file(&fp))
+				return 0;
+		}
+		else if(strcmp(arguments.output_file_path, "stdout") == 0)
 			fp = stdout;
-		else if(arguments.output_file_path != NULL &&
-				(fp = fopen(arguments.output_file_path, "a")) == NULL)
+		else if((fp = fopen(arguments.output_file_path, "a+")) == NULL)
 		{
 			printf("Couldn't open output file : %s\n",
 					arguments.output_file_path);
 			return errno;
 		}
-		else if(open_new_file(&fp) == 0)
-			return 0;
 
+		if(arguments.device != NULL)
+		{
+			if(!init_connexion(arguments.device, arguments.baud))
+				return 0;
+		}
+		else if(!init_connexion("/dev/ADAM", arguments.baud))
+			return 0;
 		// If no config path is given, scan the modules to get the 
 		// values in place. Otherwise, try to get config from file
-		if(arguments.config_file_path != NULL &&
-				load_config_from_file(arguments.config_file_path) == 0)
+		if(arguments.config_file_path != NULL)
 		{
-			printf("Error loading config file : %s\n", 
-					arguments.config_file_path);
-			return errno;
+			if(load_config_from_file(arguments.config_file_path) == 0)
+				return errno;
 		}
 		else
 			load_config_from_modules(0x10);
@@ -553,6 +602,7 @@ int main(int argc, char *argv[])
 	{
 		do
 		{
+			printf("\n\t\t*************************\t\n\n");
 			printf("\t\t[%c] : Gestion des modules\n", 'g');
 			printf("\t\t[%c] : Paramètres d'acquisition\n", 'p');
 			printf("\t\t[%c] : Lancer l'acquisition\n", 'm');
@@ -921,9 +971,16 @@ static uint8_t save_config_to_file(char *path, configuration *conf, uint8_t nb)
 static void print_header(FILE *fp)
 {
 	uint8_t j;
+	uint8_t *nb;
+	get_current_config(&nb);
+	if(*nb > 1)
+	{
+		for(j = 0 ; j < *nb; j++)
+			fprintf(fp, "Module %i,\t\t\t\t\t\t\t\t", j);
+	}
 	fprintf(fp, "Date,\t\t\t");
-	for(j = 0 ; j < NB_CHANNELS; j++)
-		fprintf(fp, "Ch%i,\t", j);
+	for(j = 0 ; j < NB_CHANNELS*(*nb); j++)
+		fprintf(fp, "Ch%i,\t", j%8);
 	fprintf(fp, "\n");
 }
 
