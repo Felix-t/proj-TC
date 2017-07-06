@@ -7,7 +7,7 @@ Restart=always
 RestartSec=30
 Type=idle
 WorkingDirectory=/home/pi/TC_Eolienne/
-ExecStart=/home/pi/TC_Eolienne/bin/thermocouples -c config/config_2
+ExecStart=/home/pi/TC_Eolienne/bin/thermocouples -c config/config_service -d "/dev/ttyUSB0"
 
 [Install]
 WantedBy=graphical.target

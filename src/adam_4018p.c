@@ -149,6 +149,7 @@ uint8_t send_command(char * command, char * reception)
 
 uint8_t get_configuration(uint8_t module_address, configuration *config)
 { 
+	printf("Address conf get_configuration : %p\n", config);
 	// Temporary configuration struct : in case of failure,
 	// the configuration given is not overwritten
 	configuration cfg;
@@ -190,7 +191,7 @@ void print_configuration(configuration *cfg, FILE *fp)
 {
 	if(cfg == NULL)
 	{
-		printf("Configuration passed in argument is NULL pointer\n");
+		printf("Print : Configuration passed in argument is NULL pointer\n");
 		return;
 	}
 	fprintf(fp, "\n\tAddress : %s\t Name : %s\n\tBaudrate : %s\n\t"
@@ -300,7 +301,7 @@ uint8_t set_configuration_status(uint8_t module_address, configuration *cfg)
 {
 	if(cfg == NULL)
 	{
-		printf("Configuration passed in argument is NULL pointer\n");
+		printf("Set : Configuration passed in argument is NULL pointer\n");
 		return 0;
 	}
 
@@ -369,7 +370,7 @@ uint8_t get_configuration_status(uint8_t module_address, configuration *cfg)
 {
 	if(cfg == NULL)
 	{
-		printf("Configuration passed in argument is NULL pointer\n");
+		printf("Get : Configuration passed in argument is NULL pointer\n");
 		return 0;
 	}
 
