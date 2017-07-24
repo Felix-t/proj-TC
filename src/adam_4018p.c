@@ -33,6 +33,15 @@ static float str_to_float(char *msg);
 
 int fd = -1;
 
+configuration **get_current_config(uint8_t **nb)
+{
+	static uint8_t nb_modules = 0;
+	static configuration *cfg = NULL;
+	if(nb != NULL)
+		*nb = &nb_modules;
+	return &cfg;
+}
+
 
 void init_struct_configuration(configuration *c)
 {
@@ -191,7 +200,7 @@ void print_configuration(configuration *cfg, FILE *fp)
 {
 	if(cfg == NULL)
 	{
-		printf("Configuration passed in argument is NULL pointer\n");
+		printf("No configuration given\n");
 		return;
 	}
 	fprintf(fp, "\n\tAddress : %s\t Name : %s\n\tBaudrate : %s\n\t"
