@@ -1,0 +1,11 @@
+--2017-07-21 10:59:48--  https://tabarly.cstb.fr/api/std/v1/config/mac=b8:27:eb:69:90:d0/
+Résolution de tabarly.cstb.fr (tabarly.cstb.fr)… 195.83.43.121
+Connexion à tabarly.cstb.fr (tabarly.cstb.fr)|195.83.43.121|:443… connecté.
+requête HTTP transmise, en attente de la réponse… 200 OK
+Taille : 2922 (2,9K) []
+Sauvegarde en : « index.html »
+
+     0K ..                                                    100% 26,8M=0s
+
+2017-07-21 10:59:49 (26,8 MB/s) — « index.html » sauvegardé [2922/2922]
+

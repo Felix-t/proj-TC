@@ -166,6 +166,12 @@ uint8_t start_acquisition(FILE *fp, uint32_t duration, double freq)
 			printf("Error while reading data\n");
 		fflush(fp);
 		sleep(60 / freq);
+		if(ftell(fp) > SIZE_MAX_FILE*1024)
+		{
+			open_new_file(&fp);
+			print_header(fp);
+		}	
+
 	}
 	return 1;
 }
@@ -632,7 +638,7 @@ static uint8_t open_new_file(FILE **fp)
 	closedir(FD);
 
 	sprintf(path, "%s%02i-%02i-%i_data", path_base, 
-			tt->tm_mday, tt->tm_mon, tt->tm_year + 1900);
+			tt->tm_mday, tt->tm_mon + 1, tt->tm_year + 1900);
 
 	if(!(*fp = fopen(path, "a+")))
 	{

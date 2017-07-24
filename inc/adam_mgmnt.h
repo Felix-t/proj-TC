@@ -24,6 +24,7 @@
 #include <argp.h>
 
 #define DEFAULT_OUTPUT_PATH "Data/"
+#define SIZE_MAX_FILE 50
 
 /* Function : Apply changes to the ADAM modules according to the 
  * currently loaded configuration. Acts blindly( does not check whether modules
