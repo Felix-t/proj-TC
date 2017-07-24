@@ -86,6 +86,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 'o':
 			arguments->interactive = 0;
 			arguments->output_file_path = arg;
+			printf("-%s-\n", arg);
 			break;
 		case 'c':      
 			arguments->interactive = 0;
@@ -259,26 +260,25 @@ uint8_t read_all(FILE *fp)
 		print_header(fp);
 
 	// Print time
+
 	t = time(NULL);
 	time_string = ctime(&t);
 	time_string[strlen(time_string) - 1] = '\0';
 	fprintf(fp, "%s, ", time_string);
 
-	// Print Data of all channels of all modules in a single line
 	for (i = 0; i< *nb_modules; i++)
 	{
-		if(!get_all_data((*conf[i]).module_address.code, (data+8*i)))
+		if(!get_all_data((*(*conf + i)).module_address.code, (data+8*i)))
 		{
 			printf("Error while reading module %02hhx"
 					", skipping to next module\n", i);
 			continue;
 		}
-		//if(*nb_modules > 1)
-		//	fprintf(fp, "Module %02hhX,\n", i);
+
 		for(j = 0; j < NB_CHANNELS; j++)
 		{
 
-			if((*conf[i]).channel_enable[j] == 1)
+			if((*(*conf + i)).channel_enable[j] == 1)
 				fprintf(fp, "%.1f \t,", data[8*i+j]);
 			else
 				fprintf(fp, "\t,");
@@ -304,8 +304,8 @@ uint8_t load_config_from_modules(uint8_t max_add)
 		printf("Error while scanning or no modules connected");
 		return 0;
 	}
-	printf("Number of detected modules : %i\n", *nb_modules);
 
+	printf("Detected number of modules : %i\n", *nb_modules);
 	if(*conf != NULL)
 		free(*conf);
 	if((*conf = malloc(sizeof(configuration)*(*nb_modules))) == NULL)
@@ -317,10 +317,9 @@ uint8_t load_config_from_modules(uint8_t max_add)
 
 	for(i = 0; i < *nb_modules; i++)
 	{
-		if((get_configuration(add_modules[i], conf[i])) == 0)
+		if((get_configuration(add_modules[i], (*conf + i))) == 0)
 			return 0;
-		printf("Address conf %i : %p\n", i, &*conf[i]);
-		print_configuration(&*conf[i], stdout);
+		print_configuration((*conf + i), stdout);
 	}
 
 	free(add_modules);
@@ -410,7 +409,7 @@ uint8_t change_config()
 	base_add = (uint8_t) strtol(input, NULL, 0);
 	for(i = 0; i < *number; i++)
 	{
-		if(base_add == (*conf[i]).module_address.code)
+		if(base_add == (*(*conf + i)).module_address.code)
 			cfg = &(*conf)[i];
 	}
 
@@ -504,6 +503,13 @@ int main(int argc, char *argv[])
 
 	sleep(5);
 
+	if(arguments.device != NULL)
+	{
+		if(!init_connexion(arguments.device, arguments.baud))
+			return 0;
+	}
+	else if(!init_connexion("/dev/ADAM", arguments.baud))
+		return 0;
 	if(!arguments.interactive)
 	{
 		// If no output path is given, set it to default
@@ -657,14 +663,21 @@ static void print_header(FILE *fp)
 	uint8_t j;
 	uint8_t *nb;
 	get_current_config(&nb);
+
+	for(j = 0; j < 27; j++)
+		fprintf(fp, " ");
 	if(*nb > 1)
 	{
 		for(j = 0 ; j < *nb; j++)
-			fprintf(fp, "Module %i,\t\t\t\t\t\t\t\t", j);
+			fprintf(fp, ",Module %i\t\t\t\t\t\t\t\t", j);
 	}
-	fprintf(fp, "Date,\t\t\t");
+	fprintf(fp, "\n");
+	fprintf(fp, "Date,");
+	for(j = 0; j < 27 - strlen("Date,"); j++)
+		fprintf(fp, " ");
 	for(j = 0 ; j < NB_CHANNELS*(*nb); j++)
-		fprintf(fp, "Ch%i,\t", j%8);
+		fprintf(fp, "M%iCh%i,\t",j/8, j%8);
+
 	fprintf(fp, "\n");
 }
 
@@ -821,7 +834,7 @@ static uint8_t check_add(uint8_t add)
 
 	for(i = 0; i < *number; i++)
 	{
-		if(add == (*conf[i]).module_address.code)
+		if(add == (*(*conf + i)).module_address.code)
 			return 1;
 	}
 	printf("Adress already existing\n");
