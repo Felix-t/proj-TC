@@ -9,7 +9,7 @@ HDIR=inc
 TDIR=tests
 
 LIBS=-lconfig
-CFLAGS = -g -I$(HDIR) -Wall
+CFLAGS = -g -I$(HDIR) -Wall $(xml2-config --cflags) $(xml2-config --libs)
 
 DEPS = $(wildcard $(HDIR)/*.h)
 

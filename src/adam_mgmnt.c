@@ -631,18 +631,19 @@ static uint8_t open_new_file(FILE **fp)
 			printf("Error opening output directory");
 			return 0;
 		}
-		while ((in_file = readdir(FD))) 
+	}
+	while ((in_file = readdir(FD))) 
+	{
+		sprintf(path, "%02i-%02i-%idata_%i",tt->tm_mday, 
+				tt->tm_mon, tt->tm_year + 1900, file_count);
+		if (!strcmp(in_file->d_name, path))
 		{
-			sprintf(path, "%02i-%02i-%idata_%i",tt->tm_mday, 
-					tt->tm_mon, tt->tm_year + 1900, file_count);
-			if (!strcmp(in_file->d_name, path))
-			{
-				printf("in file : %s\t d_name : %s\n", in_file->d_name, path);
-				file_count++;
-				rewinddir(FD);
-			}
+			printf("in file : %s\t d_name : %s\n", in_file->d_name, path);
+			file_count++;
+			rewinddir(FD);
 		}
 	}
+
 	closedir(FD);
 
 	sprintf(path, "%s%02i-%02i-%i_data_%i", path_base, 
