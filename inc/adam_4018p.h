@@ -49,6 +49,10 @@ typedef struct {
 
 void init_struct_configuration(configuration *c);
 
+// Pointer to the array of struct configuration used
+configuration **get_current_config(uint8_t **nb);
+
+
 uint8_t scan_modules(uint8_t **modules_add, uint8_t max_add);
 
 

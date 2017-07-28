@@ -8,8 +8,8 @@ BDIR=bin
 HDIR=inc
 TDIR=tests
 
-LIBS=-lconfig
-CFLAGS = -g -I$(HDIR) -Wall
+LIBS=-lconfig `xml2-config --libs`
+CFLAGS = -g -I$(HDIR) -Wall `xml2-config --cflags` 
 
 DEPS = $(wildcard $(HDIR)/*.h)
 

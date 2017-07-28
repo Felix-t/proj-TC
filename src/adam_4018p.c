@@ -33,6 +33,15 @@ static float str_to_float(char *msg);
 
 int fd = -1;
 
+configuration **get_current_config(uint8_t **nb)
+{
+	static uint8_t nb_modules = 0;
+	static configuration *cfg = NULL;
+	if(nb != NULL)
+		*nb = &nb_modules;
+	return &cfg;
+}
+
 
 void init_struct_configuration(configuration *c)
 {

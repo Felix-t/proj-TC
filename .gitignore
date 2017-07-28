@@ -3,4 +3,9 @@ bin/*
 obj/*
 *.swp
 test
+*.csv
+*.gz
 Data/*
+exemple_profile
+try*
+read_xml2

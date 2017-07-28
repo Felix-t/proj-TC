@@ -1,0 +1,56 @@
+modules_address = [ 1, 2, 3, 4 ];
+modules : 
+{
+  module_1 : 
+  {
+    baudrate = "9600";
+    format = "Engineering Units";
+    checksum = 0;
+    integration_time = "50 ms";
+    input = "Undefined";
+    module_name = "4018P";
+    firmware_version = "A2.05";
+    CJC = 26.8999996185303;
+    status = [ 0, 1, 2, 3, 4, 5, 6, 7 ];
+    type = [ "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T" ];
+  };
+  module_2 : 
+  {
+    baudrate = "9600";
+    format = "Engineering Units";
+    checksum = 0;
+    integration_time = "50 ms";
+    input = "Undefined";
+    module_name = "4018P";
+    firmware_version = "A2.05";
+    CJC = 26.0;
+    status = [ 0, 1, 2, 3, 4, 5, 6, 7 ];
+    type = [ "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T" ];
+  };
+  module_3 : 
+  {
+    baudrate = "9600";
+    format = "Engineering Units";
+    checksum = 0;
+    integration_time = "50 ms";
+    input = "Undefined";
+    module_name = "4018P";
+    firmware_version = "A2.05";
+    CJC = 25.8999996185303;
+    status = [ 0, 1, 2, 3, 4, 5, 6, 7 ];
+    type = [ "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T" ];
+  };
+  module_4 : 
+  {
+    baudrate = "9600";
+    format = "Engineering Units";
+    checksum = 0;
+    integration_time = "50 ms";
+    input = "Undefined";
+    module_name = "4018P";
+    firmware_version = "A2.05";
+    CJC = 25.7000007629395;
+    status = [ 0, 1, 2, 3, 4, 5, 6, 7 ];
+    type = [ "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T", "TC_T" ];
+  };
+};

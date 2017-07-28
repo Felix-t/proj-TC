@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Resource name="ADAM4018+" version="1.0" protocole="Generic">
+
+    <extraParameters>
+        <MAC name="MAC Address" id="mac" unique="true"/>
+    </extraParameters>
+
+    <Configuration>
+        <ConfigurationPage name="Acquisition">
+            <ConfigurationSection name="Configuration ADAM4018+">
+                <Integer name="Acquisition period" id="pe" help="seconds" defaultValue="60" min="1" max="86400"/>
+                <Integer name="Adresse module 1" id="ad_mod_1" defaultValue="1"/>
+                <Integer name="Adresse module 2" id="ad_mod_2" defaultValue="2"/>
+                <Integer name="Adresse module 3" id="ad_mod_3" defaultValue="3"/>
+                <Integer name="Adresse module 4" id="ad_mod_4" defaultValue="4"/>
+            </ConfigurationSection>
+            
+           <ConfigurationSection name="Configuration module 1">
+                <Bool name="Channel ch1" id="M1_ch1_enable" help="Enable the channel ch1" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch1" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                               
+                <Bool name="Channel ch2" id="M1_ch2_enable" help="Enable the channel ch2" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch2" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch3" id="M1_ch3_enable" help="Enable the channel ch3" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch3" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch4" id="M1_ch4_enable" help="Enable the channel ch4" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch4" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+
+                <Bool name="Channel ch5" id="M1_ch5_enable" help="Enable the channel ch5" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch5" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch6" id="M1_ch6_enable" help="Enable the channel ch6" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch6" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch7" id="M1_ch7_enable" help="Enable the channel ch7" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch7" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch8" id="M1_ch8_enable" help="Enable the channel ch8" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M1_ch8" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                           
+            </ConfigurationSection>
+          
+          <ConfigurationSection name="Configuration module 2">
+                <Bool name="Channel ch1" id="M2_ch1_enable" help="Enable the channel ch1" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch1" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                               
+                <Bool name="Channel ch2" id="M2_ch2_enable" help="Enable the channel ch2" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch2" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch3" id="M2_ch3_enable" help="Enable the channel ch3" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch3" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch4" id="M2_ch4_enable" help="Enable the channel ch4" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch4" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+
+                <Bool name="Channel ch5" id="M2_ch5_enable" help="Enable the channel ch5" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch5" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch6" id="M2_ch6_enable" help="Enable the channel ch6" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch6" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch7" id="M2_ch7_enable" help="Enable the channel ch7" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch7" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch8" id="M2_ch8_enable" help="Enable the channel ch8" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M2_ch8" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+            </ConfigurationSection>
+          
+          
+            <ConfigurationSection name="Configuration module 3">
+                <Bool name="Channel ch1" id="M3_ch1_enable" help="Enable the channel ch1" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch1" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                               
+                <Bool name="Channel ch2" id="M3_ch2_enable" help="Enable the channel ch2" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch2" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch3" id="M3_ch3_enable" help="Enable the channel ch3" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch3" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch4" id="M3_ch4_enable" help="Enable the channel ch4" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch4" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+
+                <Bool name="Channel ch5" id="M3_ch5_enable" help="Enable the channel ch5" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch5" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch6" id="M3_ch6_enable" help="Enable the channel ch6" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch6" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch7" id="M3_ch7_enable" help="Enable the channel ch7" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch7" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch8" id="M3_ch8_enable" help="Enable the channel ch8" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M3_ch8" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+            </ConfigurationSection>
+          
+            <ConfigurationSection name="Configuration module 4">
+                <Bool name="Channel ch1" id="M4_ch1_enable" help="Enable the channel ch1" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch1" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                               
+                <Bool name="Channel ch2" id="M4_ch2_enable" help="Enable the channel ch2" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch2" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch3" id="M4_ch3_enable" help="Enable the channel ch3" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch3" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch4" id="M4_ch4_enable" help="Enable the channel ch4" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch4" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+
+                <Bool name="Channel ch5" id="M4_ch5_enable" help="Enable the channel ch5" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch5" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch6" id="M4_ch6_enable" help="Enable the channel ch6" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch6" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch7" id="M4_ch7_enable" help="Enable the channel ch7" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch7" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+                
+                <Bool name="Channel ch8" id="M4_ch8_enable" help="Enable the channel ch8" defaultValue="true"/>
+                <Enum name="Sensor type" id="sensor_type_M4_ch8" defaultValue="T">
+                    <EnumEntry value="J" display="J"/>
+                    <EnumEntry value="K" display="K"/>
+                    <EnumEntry value="R" display="R"/>
+                    <EnumEntry value="S" display="S"/>
+                    <EnumEntry value="T" display="T"/>
+                    <EnumEntry value="E" display="E"/>
+                    <EnumEntry value="B" display="B"/>
+                </Enum>
+            </ConfigurationSection>
+
+        </ConfigurationPage>
+    </Configuration>
+    
+    <Data>
+    
+        <!-- Temperature -->
+        <DataChannel id="Mod1_temp1" name="Module 1: Temperature 1" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp2" name="Module 1: Temperature 2" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp3" name="Module 1: Temperature 3" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp4" name="Module 1: Temperature 4" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp5" name="Module 1: Temperature 5" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp6" name="Module 1: Temperature 6" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp7" name="Module 1: Temperature 7" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_temp8" name="Module 1: Temperature 8" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod1_cold" name="Module 1: Temperature Cold junction" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+
+        <DataChannel id="Mod2_temp1" name="Module 2: Temperature 1" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp2" name="Module 2: Temperature 2" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp3" name="Module 2: Temperature 3" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp4" name="Module 2: Temperature 4" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp5" name="Module 2: Temperature 5" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp6" name="Module 2: Temperature 6" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp7" name="Module 2: Temperature 7" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_temp8" name="Module 2: Temperature 8" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod2_cold" name="Module 2: Temperature Cold junction" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+
+        <DataChannel id="Mod3_temp1" name="Module 3: Temperature 1" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp2" name="Module 3: Temperature 2" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp3" name="Module 3: Temperature 3" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp4" name="Module 3: Temperature 4" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp5" name="Module 3: Temperature 5" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp6" name="Module 3: Temperature 6" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp7" name="Module 3: Temperature 7" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_temp8" name="Module 3: Temperature 8" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod3_cold" name="Module 3: Temperature Cold junction" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+
+        <DataChannel id="Mod4_temp1" name="Module 4: Temperature 1" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp2" name="Module 4: Temperature 2" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp3" name="Module 4: Temperature 3" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp4" name="Module 4: Temperature 4" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp5" name="Module 4: Temperature 5" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp6" name="Module 4: Temperature 6" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp7" name="Module 4: Temperature 7" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_temp8" name="Module 4: Temperature 8" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+        <DataChannel id="Mod4_cold" name="Module 4: Temperature Cold junction" dataFormat="Point" unit-raw="obix:units/celsius" decimal="1"/>
+     
+    </Data>
+</Resource>

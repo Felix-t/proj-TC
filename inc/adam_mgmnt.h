@@ -24,7 +24,11 @@
 #include <argp.h>
 
 #define DEFAULT_OUTPUT_PATH "Data/"
-#define SIZE_MAX_FILE 50
+#define SIZE_MAX_FILE 50 // useless
+/* In seconds, time until a new file is created
+   If < freq, every read is made in a new file */
+#define NEW_FILE_PERIOD 3600*24 
+
 
 /* Function : Apply changes to the ADAM modules according to the 
  * currently loaded configuration. Acts blindly( does not check whether modules
