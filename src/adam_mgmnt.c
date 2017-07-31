@@ -270,7 +270,7 @@ uint8_t read_all(FILE *fp)
 	// Print time
 
 	t = time(NULL);
-	sprintf(time_string, "%i", t);
+	sprintf(time_string, "%i", (int) t);
 	fprintf(fp, "%s,", time_string);
 
 	for (i = 0; i< *nb_modules; i++)
@@ -400,6 +400,7 @@ void module_management()
 		input_size = 0;
 	}while(usr_choice[0] != 'q');
 	free(usr_choice);
+	free(save_path);
 	return;
 }
 
@@ -460,6 +461,7 @@ uint8_t change_config()
 				break;
 		};
 	}while(usr_choice != 'q');
+    free(input);
 	return 1;
 }
 
@@ -588,7 +590,10 @@ int main(int argc, char *argv[])
 		}while(usr_choice[0] != 'q');
 	}
 
+    if(fp)
 	fclose(fp);
+    if(usr_choice)
+        free(usr_choice);
 	close_connexion();
 	return 0;
 }
@@ -672,6 +677,8 @@ static uint8_t open_new_file(FILE **fp)
 		printf("Can't open file %s\n", path);
 		return 0;
 	}
+
+    printf("Adresse of fp : %p\n", *fp);
 
 	return 1;
 }
