@@ -687,8 +687,8 @@ static void print_header(FILE *fp)
 	for(i = 0; i < *nb; i++)
 	{
 		for(j = 0 ; j < NB_CHANNELS; j++)
-			fprintf(fp, "Mod%i_temp%i,", i, j);
-		fprintf(fp, "Mod%i_cold,", i);
+			fprintf(fp, "Mod%i_temp%i,", i + 1, j + 1);
+		fprintf(fp, "Mod%i_cold,", i + 1);
 	}
 	fprintf(fp, "\n");
 }
