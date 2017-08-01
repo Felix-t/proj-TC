@@ -19,7 +19,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define CMD_TIMEOUT 2 // = nb messages par sec
+#define CMD_TIMEOUT 1.5 // = nb messages par sec. Must be > 1
 #define MAX_SIZE_MSG 58
 #define NB_CHANNELS 8
 #define COUNT_VALUE 0.009 //°C
@@ -48,6 +48,7 @@ typedef struct {
 
 
 void init_struct_configuration(configuration *c);
+configuration *new_config(uint8_t size);
 
 // Pointer to the array of struct configuration used
 configuration **get_current_config(uint8_t **nb);

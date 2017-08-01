@@ -25,7 +25,6 @@ static uint8_t parseDoc(char *xmlDoc);
 static xmlNodePtr get_val(char *type, char *name, xmlNodePtr cur);
 static xmlNodePtr get_first_node(char *name, xmlNodePtr cur);
 static inline uint8_t end_doc(xmlNodePtr cur);
-static configuration *new_config(uint8_t size);
 static uint8_t find_input_type(tuple *type, const char *name);
 
 // @TODO :
@@ -124,17 +123,7 @@ static uint8_t save_file_lconfig(char *path)
 // @TODO :
 static uint8_t load_file_xml(char *path)
 {
-    FILE *fp = NULL;
-
-	if((fp = fopen(path, "r")) == NULL)
-	{
-		printf("Error opening file %s\n", path);
-		return 0;
-	}
-    fclose(fp);
-
 	parseDoc(path);
-
 	return 1;
 }
 
@@ -446,12 +435,13 @@ static uint8_t parseDoc(char *xmlDoc)
         sprintf(name_node, "ad_mod_%i", i++);
         node = get_val("integer", name_node, root_node);
         if(node != NULL 
-                && (add = strtol(xmlGetProp(node, "val"), NULL, 0) < 0xFF))
+                && ((add = strtol(xmlGetProp(node, "val"), NULL, 0)) < 0xFF))
         {
             tmp_add[size] = add;
             size++;
         }
     }
+
     cfg = new_config(size);
 
     // For each module, fill the configuration structure with module address, 
@@ -523,28 +513,6 @@ static uint8_t find_input_type(tuple *type, const char *name)
             return 0;
     };
     return 1 ;
-}
-
-static configuration *new_config(uint8_t size)
-{
-    uint8_t i = 0, *nb_modules;
-    configuration **conf = get_current_config(&nb_modules);
-    if(size == 0)
-    {
-        printf("No module found in configuration file\n");
-        return NULL;
-    }
-    if(*conf != NULL)
-        free(*conf);
-    *nb_modules = size;
-    if((*conf = malloc(sizeof(configuration)*(*nb_modules))) == NULL)
-    {
-        printf("Memory error\n");
-        return NULL;
-    }
-    for(i = 0; i < *nb_modules; i++)
-        init_struct_configuration(*conf + i);
-    return *conf;
 }
 
 

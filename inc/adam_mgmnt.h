@@ -41,6 +41,9 @@
 uint8_t exec_config();
 
 
+uint8_t apply_config();
+
+
 /* Function : Read the data from all channels of all modules defined in 
  * current configuration and print it to a stream (stdout, a file...)
  * Params : A stream where data will be printed

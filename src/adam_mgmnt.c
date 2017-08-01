@@ -86,7 +86,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 'o':
 			arguments->interactive = 0;
 			arguments->output_file_path = arg;
-			printf("-%s-\n", arg);
 			break;
 		case 'c':      
 			arguments->interactive = 0;
@@ -224,7 +223,12 @@ uint8_t exec_config()
 		printf("No modules found in configuration...");
 		return 0;
 	}
+	for(i = 0; i < *nb_modules; i++)
+	{
+		printf("\t\t\t\t%s\n", (*conf + i)->module_address.name);
+		printf("\t\t\t\t%p\n", &(*conf + i)->module_address.name);
 
+	}
 	// Apply modifications module after module, continue even if 
 	// an error happened
 	printf("Applying new configuration...\n");
@@ -315,15 +319,7 @@ uint8_t load_config_from_modules(uint8_t max_add)
 	}
 
 	printf("Detected number of modules : %i\n", *nb_modules);
-	if(*conf != NULL)
-		free(*conf);
-	if((*conf = malloc(sizeof(configuration)*(*nb_modules))) == NULL)
-	{
-		printf("Memory error\n");
-		return 0;
-	}
-	//memset(*conf, 0, sizeof(configuration)*(*nb_modules));
-
+	new_config(*nb_modules);
 	for(i = 0; i < *nb_modules; i++)
 	{
 		if((get_configuration(add_modules[i], (*conf + i))) == 0)
@@ -369,7 +365,11 @@ void module_management()
 				printf("Fichier : ");
 				in = getline(&save_path, &input_size, stdin);
 				save_path[in - 1] = '\0';
+				printf("%s\n", save_path);
 				load_config_from_file(save_path);
+				printf("\tConfig read, loading in modules...");
+				if(exec_config())
+					printf("\tOk !\n");
 				break;
 			case 'm':
 				load_config_from_modules(0x0c);
@@ -434,8 +434,7 @@ uint8_t change_config()
 		printf("\t\t[%c] : Addresse du module\n", '1');
 		printf("\t\t[%c] : Integration time\n", '2');
 		printf("\t\t[%c] : CJC calibration\n", '3');
-		printf("\t\t[%c] : Channel type\n", '4');
-		printf("\t\t[%c] : Channel enabled\n", '5');
+		printf("\t\t[%c] : Channel configuration\n", '4');
 		printf("\t\t[%c] : Quitter\n", 'q');
 
 		getline(&input, &input_size, stdin);
@@ -487,7 +486,7 @@ uint8_t apply_config()
 	}
 
 	if( fail != 0)
-		printf("%i fails encountered\n", fail);
+		printf("%i failures encountered\n", fail);
 	return !fail;
 }
 
@@ -550,7 +549,8 @@ int main(int argc, char *argv[])
 		// values in place. Otherwise, try to get config from file
 		if(arguments.config_file_path != NULL)
 		{
-			if(load_config_from_file(arguments.config_file_path) == 0)
+			if(load_config_from_file(arguments.config_file_path) == 0
+					|| !exec_config())
 				return errno;
 		}
 		else
@@ -637,7 +637,6 @@ static uint8_t open_new_file(FILE **fp)
 	
 	if(*fp != NULL)
 	{	
-		printf("Debug : path %s \n", path);
 		fclose(*fp);
 		exec_compression(path);
 	}
@@ -661,7 +660,6 @@ static uint8_t open_new_file(FILE **fp)
 				tt->tm_mon, tt->tm_year + 1900, file_count);
 		if (!strcmp(in_file->d_name, path))
 		{
-			printf("in file : %s\t d_name : %s\n", in_file->d_name, path);
 			file_count++;
 			rewinddir(FD);
 		}
@@ -678,7 +676,6 @@ static uint8_t open_new_file(FILE **fp)
 		return 0;
 	}
 
-    printf("Adresse of fp : %p\n", *fp);
 
 	return 1;
 }
@@ -705,10 +702,11 @@ static uint8_t change_address(configuration *cfg)
 {
 	char * input = NULL;
 	uint8_t base_add = cfg->module_address.code;
+	size_t input_size = 0;
 	long int parse;
 
 	printf("New address for module %02hhX : ", base_add);
-	getline(&input, NULL, stdin);
+	getline(&input, &input_size, stdin);
 	parse = strtol(input, NULL, 0);
 	free(input);
 	if(parse < 0 || parse > 0xFF)
@@ -741,10 +739,11 @@ static uint8_t change_integration_time(configuration *cfg)
 {
 	long int parse;
 	char *input = NULL;
+	size_t input_size = 0;
 
 	printf("Change integration time to : \n\t[0] : 50ms\n\t[1] : 60ms\n");
 
-	getline(&input, NULL, stdin);
+	getline(&input, &input_size, stdin);
 	parse = strtol(input, NULL, 0);
 	free(input);
 

@@ -43,6 +43,29 @@ configuration **get_current_config(uint8_t **nb)
 }
 
 
+configuration *new_config(uint8_t size)
+{
+    uint8_t i = 0, *nb_modules;
+    configuration **conf = get_current_config(&nb_modules);
+    if(size == 0)
+    {
+        printf("No module found in configuration file\n");
+        return NULL;
+    }
+    if(*conf != NULL)
+        free(*conf);
+    *nb_modules = size;
+    if((*conf = malloc(sizeof(configuration)*(*nb_modules))) == NULL)
+    {
+        printf("Memory error\n");
+        return NULL;
+    }
+    for(i = 0; i < *nb_modules; i++)
+        init_struct_configuration(*conf + i);
+    return *conf;
+}
+
+
 void init_struct_configuration(configuration *c)
 {
 	memset(c, 0, sizeof(configuration));	
@@ -158,7 +181,6 @@ uint8_t send_command(char * command, char * reception)
 
 uint8_t get_configuration(uint8_t module_address, configuration *config)
 { 
-	printf("Address conf get_configuration : %p\n", config);
 	// Temporary configuration struct : in case of failure,
 	// the configuration given is not overwritten
 	configuration cfg;
@@ -188,6 +210,8 @@ uint8_t get_configuration(uint8_t module_address, configuration *config)
 
 uint8_t set_configuration(uint8_t module_address, configuration *config)
 { 
+	printf("Set configuration of module : %i\n", config->module_address.code);
+	printf("Set configuration of module : %i\n", module_address);
 	if(!set_configuration_status(module_address, config) 
 			|| !set_all_channels_type(module_address, config->ch_input)
 			|| !set_channels_status(module_address, config->channel_enable))
@@ -656,15 +680,17 @@ uint8_t scan_modules(uint8_t **modules_add, uint8_t max_add)
 {
 	if(max_add == 0)
 		max_add = 0xFF;
-	uint8_t i, nb_mod = 0;
+	uint8_t i = 0, nb_mod = 0;
 	uint8_t mod_add_tmp[max_add];
+	memset(mod_add_tmp, 0, max_add);
 	// Build command
 	char command[20] = "", reception[50] = "";
 
 	struct timespec tt = {
 		.tv_sec = 0,
-		.tv_nsec = 1000000000
+		.tv_nsec = 1000000000 / CMD_TIMEOUT
 	};
+
 
 
 	printf("Scanning modules...   \n");
@@ -673,7 +699,7 @@ uint8_t scan_modules(uint8_t **modules_add, uint8_t max_add)
 	{
 		printf("\b\b%02hhX", i);
 		fflush(stdout);
-		nanosleep(&tt, NULL);
+		//nanosleep(&tt, NULL);
 		sprintf(command, "$%02hhX", i);
 		if(send_command(command, reception) 
 				&& strcmp(reception, "") != 0)
